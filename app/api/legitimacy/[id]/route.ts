@@ -1,14 +1,86 @@
 import { NextRequest, NextResponse } from "next/server"
 
-export async function PUT(
-    request: NextRequest,
-    context: { params: { id: string } | Promise<{ id: string }> }
-) {
+// Properly typed context for Next.js 15
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
     const params = await context.params
     const id = params.id
 
     try {
-        const authToken = await request.cookies.get("auth_token")?.value
+        const authToken = request.cookies.get("auth_token")?.value
+
+        if (!authToken) {
+            return NextResponse.json(
+                { success: false, message: "Authentication required" },
+                { status: 401 }
+            )
+        }
+
+        const formData = await request.formData()
+
+        // Forward the FormData to Laravel
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/admin/legitimacy/${id}`,
+            {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "include",
+                body: formData,
+            }
+        )
+
+        const contentType = response.headers.get("content-type")
+        let data
+
+        if (contentType?.includes("application/json")) {
+            data = await response.json()
+        } else {
+            const text = await response.text()
+            console.error("Non-JSON response from Laravel:", text)
+            return NextResponse.json(
+                { success: false, message: "Invalid response from server" },
+                { status: 500 }
+            )
+        }
+
+        if (!response.ok) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: data.message || "Failed to update legitimacy request",
+                    errors: data.errors,
+                },
+                { status: response.status }
+            )
+        }
+
+        return NextResponse.json(data, { status: 200 })
+    } catch (error) {
+        console.error("Error updating legitimacy request:", error)
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : "Unknown error",
+            },
+            { status: 500 }
+        )
+    }
+}
+
+export async function PUT(request: NextRequest, context: RouteContext) {
+    const params = await context.params
+    const id = params.id
+
+    try {
+        const authToken = request.cookies.get("auth_token")?.value
 
         if (!authToken) {
             return NextResponse.json(
@@ -66,6 +138,72 @@ export async function PUT(
         return NextResponse.json(data, { status: 200 })
     } catch (error) {
         console.error("Error updating legitimacy request:", error)
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : "Unknown error",
+            },
+            { status: 500 }
+        )
+    }
+}
+
+export async function DELETE(request: NextRequest, context: RouteContext) {
+    const params = await context.params
+    const id = params.id
+
+    try {
+        const authToken = request.cookies.get("auth_token")?.value
+
+        if (!authToken) {
+            return NextResponse.json(
+                { success: false, message: "Authentication required" },
+                { status: 401 }
+            )
+        }
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/admin/legitimacy/${id}`,
+            {
+                method: "DELETE",
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "include",
+            }
+        )
+
+        const contentType = response.headers.get("content-type")
+        let data
+
+        if (contentType?.includes("application/json")) {
+            data = await response.json()
+        } else {
+            const text = await response.text()
+            console.error("Non-JSON response from Laravel:", text)
+            return NextResponse.json(
+                { success: false, message: "Invalid response from server" },
+                { status: 500 }
+            )
+        }
+
+        if (!response.ok) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: data.message || "Failed to delete legitimacy request",
+                    errors: data.errors,
+                },
+                { status: response.status }
+            )
+        }
+
+        return NextResponse.json(data, { status: 200 })
+    } catch (error) {
+        console.error("Error deleting legitimacy request:", error)
         return NextResponse.json(
             {
                 success: false,

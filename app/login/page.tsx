@@ -198,8 +198,6 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-orange-50 flex flex-col items-center justify-center px-4 relative">
       {/* Home Navigation */}
-     
-
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -214,10 +212,10 @@ export default function LoginPage() {
             className="text-center mb-10"
           >
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4">
-              <Image 
-                src="/perpetuallogo.jpg" 
-                alt="Perpetual Village Logo" 
-                width={80} 
+              <Image
+                src="/perpetuallogo.jpg"
+                alt="Perpetual Village Logo"
+                width={80}
                 height={80}
                 className="rounded-full object-cover"
               />

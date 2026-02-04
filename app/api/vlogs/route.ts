@@ -1,10 +1,29 @@
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
 
 export const GET = async () => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vlogs`, {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth_token')?.value
+
+    console.log('API Route /api/auth/me - Token exists:', !!token)
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Not authenticated" },
+        { status: 401 }
+      )
+    }
+
+
+    const res = await fetch(`${API_URL}/vlogs`, {
       method: "GET",
-      headers: { Accept: "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
       credentials: "include",
     })
 

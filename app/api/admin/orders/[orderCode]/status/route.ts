@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (perPage) queryParams.append('per_page', perPage)
 
     const queryString = queryParams.toString()
-    const url = `${LARAVEL_API_URL}/users${queryString ? `?${queryString}` : ''}`
+    const url = `${LARAVEL_API_URL}/users/cart${queryString ? `?${queryString}` : ''}`
 
     console.log('Fetching users:', {
       url,
@@ -113,7 +113,7 @@ export async function PATCH(request: NextRequest) {
 
     // Get the request body
     const body = await request.json()
-    const { userId, status, rejection_reason } = body
+    const { userId, status } = body
 
     if (!userId || !status) {
       return NextResponse.json(
@@ -125,7 +125,6 @@ export async function PATCH(request: NextRequest) {
     console.log('Updating user status:', {
       userId,
       status,
-      rejection_reason,
       hasAuth: !!token,
     })
 
@@ -139,7 +138,7 @@ export async function PATCH(request: NextRequest) {
         'Authorization': `Bearer ${token}`,
         'X-Requested-With': 'XMLHttpRequest',
       },
-      body: JSON.stringify({ status, rejection_reason }),
+      body: JSON.stringify({ status }),
     })
 
     // Get raw text first

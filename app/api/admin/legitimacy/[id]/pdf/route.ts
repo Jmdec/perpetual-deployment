@@ -21,12 +21,9 @@ export async function GET(
     // ⚠️ Await params to get the actual ID
     const { id } = await params
 
-    const laravelUrl = `${API_URL}/admin/legitimacy/${id}/pdf`
-
-    console.log("Fetching legitimacy PDF from:", laravelUrl)
     console.log("ID parameter:", id) // Debug log
 
-    const response = await fetch(laravelUrl, {
+    const response = await fetch(`${API_URL}/admin/legitimacy/${id}/pdf`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

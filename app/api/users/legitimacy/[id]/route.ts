@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
+export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
     const cookieStore = await cookies()
     const authToken = cookieStore.get("auth_token")
@@ -10,7 +14,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 })
     }
 
-    const { id } = await context.params
+    const { id } = await params
     const body = await request.json()
 
     console.log("Updating legitimacy ID:", id, "with data:", body)
@@ -54,7 +58,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
     const cookieStore = await cookies()
     const authToken = cookieStore.get("auth_token")
@@ -63,7 +67,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 })
     }
 
-    const { id } = await context.params
+    const { id } = await params
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/legitimacy/${id}`, {
       method: "DELETE",

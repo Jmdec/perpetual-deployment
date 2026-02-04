@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ], 
-    domains: ['localhost'],
+    domains: ['localhost', 'perpetual.com'],
   },
 
   // Fix Turbopack workspace root warning

@@ -54,8 +54,11 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!res.ok) {
-    console.error("API Error:", data)
-    throw new Error(data.message || "Request failed")
+    const error = new Error(data.message || "Request failed")
+    // Attach status for conditional error handling
+    ;(error as any).status = res.status
+    ;(error as any).data = data
+    throw error
   }
 
   return data
@@ -151,7 +154,14 @@ export default function MemberDashboard() {
         setJuanTapProfile(res.data)
       }
     } catch (err: any) {
-      console.log("No existing JuanTap profile found")
+      // 404 is expected when user doesn't have a JuanTap profile yet
+      if (err.status === 404) {
+        console.log("No existing JuanTap profile found (expected for new users)")
+        setJuanTapProfile(null)
+      } else {
+        // Log unexpected errors
+        console.error("Error fetching JuanTap profile:", err)
+      }
     }
   }
 

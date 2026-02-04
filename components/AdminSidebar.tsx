@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Handshake,
+  ShoppingBasket, 
+  ShoppingBag,
   Images,
   Video,
   X,
@@ -92,6 +94,8 @@ export default function AdminSidebar({
     { icon: Megaphone, label: "Announcements", path: "/dashboard/admin/announcements" },
     { icon: Mail, label: "Contact Messages", path: "/dashboard/admin/contact" },
     { icon: FileText, label: "Legitimacy", path: "/dashboard/admin/legitimacy" },
+    { icon: ShoppingBag, label: "Merchandize", path: "/dashboard/admin/merchandize" },
+    { icon: ShoppingBasket, label: "Orders", path: "/dashboard/admin/orders" },
     { icon: User, label: "Users", path: "/dashboard/admin/users" },
   ];
 
@@ -107,9 +111,8 @@ export default function AdminSidebar({
     <>
       {/* Logo Section */}
       <div
-        className={`flex items-center gap-2 mb-4 py-3 ${
-          isCollapsed ? "justify-center lg:justify-center" : ""
-        }`}
+        className={`flex items-center gap-2 mb-4 py-3 ${isCollapsed ? "justify-center lg:justify-center" : ""
+          }`}
       >
         <div
           className="w-10 h-10 rounded-full
@@ -142,10 +145,9 @@ export default function AdminSidebar({
                 onClick={() => handleNavigation(item.path)}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left transition-colors text-sm
                   ${isCollapsed ? "lg:justify-center" : ""}
-                  ${
-                    active
-                      ? "bg-white/20 font-semibold shadow-lg"
-                      : "hover:bg-white/10"
+                  ${active
+                    ? "bg-white/20 font-semibold shadow-lg"
+                    : "hover:bg-white/10"
                   }`}
               >
                 <item.icon size={16} />
@@ -180,10 +182,9 @@ export default function AdminSidebar({
                   onClick={() => handleNavigation(item.path)}
                   className={`w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left transition-colors text-sm
                     ${isCollapsed ? "lg:justify-center" : ""}
-                    ${
-                      active
-                        ? "bg-white/20 font-semibold shadow-lg"
-                        : "hover:bg-white/10"
+                    ${active
+                      ? "bg-white/20 font-semibold shadow-lg"
+                      : "hover:bg-white/10"
                     }`}
                 >
                   <item.icon size={16} />
@@ -252,9 +253,8 @@ export default function AdminSidebar({
 
         {/* Scrollable Content */}
         <div
-          className={`h-full overflow-y-auto overflow-x-hidden ${
-            isCollapsed ? "py-8 px-4" : "py-8 px-8"
-          } flex flex-col min-h-full`}
+          className={`h-full overflow-y-auto overflow-x-hidden ${isCollapsed ? "py-8 px-4" : "py-8 px-8"
+            } flex flex-col min-h-full`}
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "#eda909b0 #992f2f",

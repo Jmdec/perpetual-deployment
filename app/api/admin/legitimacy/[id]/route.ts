@@ -6,7 +6,8 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params
+  const params = await context.params
+  const { id } = params
 
   if (!id || id === "undefined") {
     return NextResponse.json(
@@ -15,8 +16,8 @@ export async function POST(
     )
   }
 
-  const cookieStore = cookies()
-  const authToken = (await cookieStore).get("auth_token")
+  const cookieStore = await cookies()
+  const authToken = cookieStore.get("auth_token")
 
   if (!authToken) {
     return NextResponse.json(
@@ -52,13 +53,14 @@ export async function POST(
 /* ===================== DELETE ===================== */
 export async function DELETE(
   _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }  // 🔥 FIXED: Added Promise wrapper
 ) {
   try {
-    const { id } = await context.params
+    const params = await context.params  // 🔥 FIXED: Await params first
+    const { id } = params
 
-    const cookieStore = cookies()
-    const authToken = (await cookieStore).get("auth_token")
+    const cookieStore = await cookies()
+    const authToken = cookieStore.get("auth_token")
 
     if (!authToken) {
       return NextResponse.json(

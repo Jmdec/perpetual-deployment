@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
     
     // Default redirect to home page
     console.log('Middleware: Redirecting to home page')
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Allow access to all other routes for authenticated users

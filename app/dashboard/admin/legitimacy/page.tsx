@@ -124,11 +124,11 @@ export default function AdminLegitimacyPage() {
       appAlias: app.alias,
       fullApp: app
     })
-    
+
     // 🔥 CRITICAL: Set the selected application FIRST
     setSelectedApplication(app)
     setModalMode("edit")
-    
+
     // Then open modal on next tick to ensure state is updated
     setTimeout(() => {
       setIsModalOpen(true)
@@ -150,6 +150,8 @@ export default function AdminLegitimacyPage() {
 
   const handlePrint = async (app: LegitimacyRequest) => {
     try {
+      setLoading(true) // Set loading at the start
+
       const response = await fetch(`/api/admin/legitimacy/${app.id}/pdf`, {
         credentials: "include",
       })
@@ -169,6 +171,11 @@ export default function AdminLegitimacyPage() {
           title: "Success",
           description: "Certificate downloaded successfully",
         })
+
+        // Keep loading state for 3 seconds after successful download
+        setTimeout(() => {
+          setLoading(false)
+        }, 3000)
       } else {
         const errorData = await response.json()
         toast({
@@ -176,6 +183,7 @@ export default function AdminLegitimacyPage() {
           title: "Error",
           description: errorData.message || "Failed to generate certificate",
         })
+        setLoading(false) // Remove loading immediately on error
       }
     } catch (error) {
       console.error("Error downloading certificate:", error)
@@ -184,6 +192,7 @@ export default function AdminLegitimacyPage() {
         title: "Error",
         description: "Failed to download certificate",
       })
+      setLoading(false) // Remove loading immediately on error
     }
   }
 
@@ -198,6 +207,7 @@ export default function AdminLegitimacyPage() {
       if (data.success) {
         toast({ title: "Success", description: "Application deleted successfully" })
         fetchLegitimacy()
+        setLoading(true)
       } else {
         toast({
           variant: "destructive",
@@ -209,15 +219,15 @@ export default function AdminLegitimacyPage() {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete application" })
     } finally {
       setIsDeleteOpen(false)
-      setDeleteTarget(null)
+      setLoading(false)
     }
   }
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
 
-  if (authLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
@@ -348,10 +358,10 @@ export default function AdminLegitimacyPage() {
                           </button>
                           <button
                             onClick={(e) => {
-                              console.log("EDIT button clicked!", { 
-                                appId: app.id, 
+                              console.log("EDIT button clicked!", {
+                                appId: app.id,
                                 event: e,
-                                app: app 
+                                app: app
                               })
                               openEditModal(app)
                             }}
@@ -447,7 +457,7 @@ export default function AdminLegitimacyPage() {
             setSelectedApplication(null)
           }}
         />
-        
+
         {/* 🔥 CRITICAL FIX: Only render modal when we have data in edit mode OR when in create mode */}
         {isModalOpen && (modalMode === "create" || (modalMode === "edit" && selectedApplication?.id)) && (
           <AdminLegitimacyModal
@@ -461,7 +471,7 @@ export default function AdminLegitimacyPage() {
             }}
           />
         )}
-        
+
         <AdminDeleteLegitimacyModal
           isOpen={isDeleteOpen}
           itemName={deleteTarget?.alias || "Application"}

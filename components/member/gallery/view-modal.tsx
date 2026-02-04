@@ -1,11 +1,10 @@
 "use client"
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
-import Image from "next/image"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 
-interface GalleryItem {
+interface Gallery {
   id: number
   title: string
   description?: string
@@ -14,49 +13,78 @@ interface GalleryItem {
 }
 
 interface GalleryViewModalProps {
-  galleries: GalleryItem[]
-  getImageUrl: (url: string) => string
+  galleries: Gallery[]
+  getImageUrl: (url?: string) => string
 }
 
 export default function GalleryViewModal({ galleries, getImageUrl }: GalleryViewModalProps) {
-  const [selected, setSelected] = useState<GalleryItem | null>(null)
+  const [selectedGallery, setSelectedGallery] = useState<Gallery | null>(null)
+
+  // Ensure galleries is always an array
+  const galleryList = Array.isArray(galleries) ? galleries : []
+
+  if (galleryList.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p className="text-sm">No gallery items available</p>
+      </div>
+    )
+  }
 
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {galleries.map((item) => (
+        {galleryList.map((item) => (
           <div
             key={item.id}
             className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer"
-            onClick={() => setSelected(item)}
+            onClick={() => setSelectedGallery(item)}
           >
-            <img src={getImageUrl(item.image_url)} alt={item.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-              <span className="text-white text-xs font-medium">View</span>
+            <img
+              src={getImageUrl(item.image_url)}
+              alt={item.title}
+              className="w-full h-full object-cover transition-transform group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="text-white text-xs font-medium truncate">{item.title}</p>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {selected && (
-        <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-          <DialogContent className="max-w-lg w-full p-0 overflow-hidden rounded-xl">
-            <DialogHeader className="p-0">
-              <Image
-                src={getImageUrl(selected.image_url)}
-                alt={selected.title}
-                width={600}
-                height={600}
-                className="w-full aspect-square object-cover"
-              />
-              <div className="p-4">
-                <DialogTitle className="text-lg font-bold">{selected.title}</DialogTitle>
-                {selected.description && <DialogDescription className="mt-2 text-sm text-gray-600">{selected.description}</DialogDescription>}
+      {/* View Modal */}
+      <Dialog open={!!selectedGallery} onOpenChange={(open) => !open && setSelectedGallery(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedGallery?.title}</DialogTitle>
+          </DialogHeader>
+
+          {selectedGallery && (
+            <div className="space-y-4">
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  src={getImageUrl(selectedGallery.image_url)}
+                  alt={selectedGallery.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-      )}
+
+              {selectedGallery.description && (
+                <div className="text-sm text-gray-600">
+                  <p className="font-medium mb-1">Description</p>
+                  <p>{selectedGallery.description}</p>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                Posted on {new Date(selectedGallery.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
