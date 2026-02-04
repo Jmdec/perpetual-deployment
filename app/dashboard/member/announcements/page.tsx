@@ -308,7 +308,7 @@ export default function AnnouncementsPage() {
     <MemberLayout>
       <div className="h-screen overflow-auto bg-gray-50">
         {/* Header */}
-        <header className="bg-gradient-to-r from-emerald-600 to-orange-500 text-white px-4 sm:px-6 py-3 sm:py-4 sticky top-0 z-10 shadow-md">
+        <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 sm:px-6 py-3 sm:py-4 sticky top-0 z-10 shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <Link href="/" className="hover:bg-white/10 p-1 rounded-lg transition-colors">

@@ -457,7 +457,6 @@ export default function AdminLegitimacyPage() {
             setSelectedApplication(null)
           }}
         />
-
         {/* 🔥 CRITICAL FIX: Only render modal when we have data in edit mode OR when in create mode */}
         {isModalOpen && (modalMode === "create" || (modalMode === "edit" && selectedApplication?.id)) && (
           <AdminLegitimacyModal
@@ -471,7 +470,6 @@ export default function AdminLegitimacyPage() {
             }}
           />
         )}
-
         <AdminDeleteLegitimacyModal
           isOpen={isDeleteOpen}
           itemName={deleteTarget?.alias || "Application"}

@@ -1,30 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Home,
-  Grid3x3,
+  ClipboardClock,
   Newspaper,
-  AlertTriangle,
-  User,
-  FileText,
-  GraduationCap,
-  Rocket,
-  Building2,
-  MapPin,
-  Bell,
   LogOut,
-  File,
-  Shield,
-  ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   Handshake,
   Megaphone,
   BadgeCheck,
   Camera,
+  User,
+  BookUser,
 } from 'lucide-react';
 import { authClient } from '@/lib/auth';
 import { useToast } from '@/components/ui/use-toast';
@@ -109,12 +99,16 @@ export default function MemberSidebar({
     items.some(item => isActive(item.path));
 
   const navigationItems = [
-    { icon: Home, label: 'Home', path: '/dashboard/member' },
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: BookUser, label: 'Dashboard', path: '/dashboard/member' },
     { icon: Newspaper, label: 'News', path: '/dashboard/member/news' },
     { icon: Megaphone, label: 'Announcements', path: '/dashboard/member/announcement' },
-    { icon: Handshake, label: 'Partners', path: '/dashboard/member/partners' },
     { icon: Camera, label: 'Gallery', path: '/dashboard/member/gallery' },
     { icon: BadgeCheck, label: 'Certificate of Legitemacy', path: '/dashboard/member/legitimacy' },
+    { icon: Handshake, label: 'Events', path: '/dashboard/member/events' },
+    { icon: ClipboardClock, label: 'Chapter\'s History', path: '/dashboard/member/history' },
+    { icon: BookUser, label: 'Handbook', path: '/dashboard/member/handbook' },
+    { icon: User, label: 'Profile', path: '/dashboard/member/profile' },
   ];
 
   return (
@@ -221,3 +215,44 @@ export default function MemberSidebar({
 
   );
 }
+
+const MemberProfile = () => {
+  const [profile, setProfile] = useState({
+    name: '',
+    alias: '',
+    tenure: '',
+    membership: '',
+    projects: '',
+    status: '',
+    positions: '',
+    achievements: '',
+    juantapNFC: '',
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  return (
+    <div className="p-4 bg-white rounded shadow-md">
+      <h2 className="text-xl font-bold mb-4">Member Profile</h2>
+      <form className="space-y-4">
+        {Object.keys(profile).map((field) => (
+          <div key={field}>
+            <label className="block text-sm font-medium text-gray-700 capitalize">
+              {field.replace(/([A-Z])/g, ' $1')}
+            </label>
+            <input
+              type="text"
+              name={field}
+              value={profile[field]}
+              onChange={handleChange}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        ))}
+      </form>
+    </div>
+  );
+};

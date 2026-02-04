@@ -14,7 +14,6 @@ const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://pamplonatres-laspinas.vercel.app/"),
-
   title: {
     default: "Tau Gamma Phi | Perpetual Village Chapter Official Portal",
     template: "%s | Tau Gamma Phi"
@@ -39,7 +38,6 @@ export const metadata: Metadata = {
     "community service",
     "brotherhood organization"
   ],
-
   authors: [{ name: "Tau Gamma Phi - Perpetual Village Chapter" }],
   creator: "Tau Gamma Phi - Perpetual Village Chapter",
   publisher: "Tau Gamma Phi, Perpetual Village Chapter, Las Piñas City",
@@ -47,7 +45,6 @@ export const metadata: Metadata = {
   applicationName: "Tau Gamma Phi Portal",
   referrer: "origin-when-cross-origin",
   manifest: "/manifest.json",
-
   // Open Graph metadata
   openGraph: {
     type: "website",
@@ -129,19 +126,16 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-
   formatDetection: {
     email: false,
     address: true,
     telephone: true,
   },
-
   verification: {
     google: "your-google-verification-code",
     yandex: "your-yandex-verification-code",
     yahoo: "your-yahoo-verification-code",
   },
-
   alternates: {
     canonical: "https://pamplonatres-laspinas.vercel.app/",
     languages: {
@@ -296,13 +290,11 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
-
         {/* Location Schema */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
         />
-
         {/* Website Schema */}
         <script
           type="application/ld+json"
@@ -314,7 +306,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
-
         {/* Open Graph Image Tags */}
         <meta property="og:image" content="https://pamplonatres-laspinas.vercel.app/og-image.png" />
         <meta property="og:image:secure_url" content="https://pamplonatres-laspinas.vercel.app/og-image.png" />
@@ -331,13 +322,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-
         {/* Geographic meta tags - Las Piñas City coordinates */}
         <meta name="geo.region" content="PH-NCR" />
         <meta name="geo.placename" content="Perpetual Village, Las Piñas City" />
         <meta name="geo.position" content="14.4611;120.9845" />
         <meta name="ICBM" content="14.4611, 120.9845" />
-
         {/* Additional meta tags */}
         <meta name="format-detection" content="telephone=yes" />
         <meta name="language" content="English" />
@@ -347,7 +336,6 @@ export default function RootLayout({
         <meta name="target" content="all" />
         <meta name="HandheldFriendly" content="True" />
         <meta name="MobileOptimized" content="320" />
-
         {/* Location meta */}
         <meta property="place:location:latitude" content="14.4611" />
         <meta property="place:location:longitude" content="120.9845" />

@@ -58,7 +58,11 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   }
 }
 
+<<<<<<< HEAD
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
+=======
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+>>>>>>> repo-eirene/main
   try {
     const cookieStore = await cookies()
     const authToken = cookieStore.get("auth_token")
@@ -67,7 +71,11 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 })
     }
 
+<<<<<<< HEAD
     const { id } = await params
+=======
+    const { id } = await context.params
+>>>>>>> repo-eirene/main
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/legitimacy/${id}`, {
       method: "DELETE",

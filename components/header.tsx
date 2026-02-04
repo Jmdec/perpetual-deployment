@@ -305,14 +305,6 @@ export default function Header() {
                   )}
                 </button>
 
-                <Link
-                  href={getDashboardLink()}
-                  className="px-3 xl:px-4 py-2 xl:py-2.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-sm font-semibold transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 xl:gap-2"
-                >
-                  <LayoutDashboard size={16} className="xl:w-[18px] xl:h-[18px]" />
-                  <span className="hidden xl:inline">Dashboard</span>
-                </Link>
-
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}

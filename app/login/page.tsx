@@ -198,6 +198,8 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-orange-50 flex flex-col items-center justify-center px-4 relative">
       {/* Home Navigation */}
+     
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -287,9 +289,6 @@ export default function LoginPage() {
               transition={{ delay: 0.35 }}
               className="flex items-center justify-end"
             >
-              <Link href="#" className="text-sm text-yellow-600 font-semibold hover:text-yellow-500">
-                Forgot password?
-              </Link>
             </motion.div>
 
             <motion.button

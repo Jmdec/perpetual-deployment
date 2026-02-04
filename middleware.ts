@@ -41,6 +41,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Allow unauthenticated access to specific API routes
+  if (isApiRoute && pathname === '/api/events/invites') {
+    console.log('Middleware: Allowing unauthenticated access to /api/events/invites')
+    return NextResponse.next()
+  }
+
   // If accessing protected route without token, redirect to login
   if (!token && !isPublicPath) {
     console.log('Middleware: No token, redirecting to login')
