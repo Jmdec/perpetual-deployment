@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   Images,
   Video,
+  Calendar,
   X,
 } from "lucide-react";
 import { authClient } from "@/lib/auth";
@@ -92,6 +93,7 @@ export default function AdminSidebar({
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/admin" },
     { icon: Newspaper, label: "News", path: "/dashboard/admin/news" },
     { icon: Megaphone, label: "Announcements", path: "/dashboard/admin/announcements" },
+    { icon: Calendar, label: "Events", path: "/dashboard/admin/events" },
     { icon: Mail, label: "Contact Messages", path: "/dashboard/admin/contact" },
     { icon: FileText, label: "Legitimacy", path: "/dashboard/admin/legitimacy" },
     { icon: ShoppingBag, label: "Merchandize", path: "/dashboard/admin/merchandize" },
