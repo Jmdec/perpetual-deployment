@@ -57,6 +57,7 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
 
 const userAPI = {
     me: () => fetchWithAuth("/api/auth/me"),
+    profile: () => fetchWithAuth("/api/member/profile"),
 };
 
 export default function ProfilePreview() {
@@ -68,9 +69,12 @@ export default function ProfilePreview() {
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            const res = await userAPI.me();
-            setUser(res.user);
-            setProfile(res.user.member_profile);
+            const [userRes, profileRes] = await Promise.all([
+                userAPI.me(),
+                userAPI.profile(),
+            ]);
+            setUser(userRes.user);
+            setProfile(profileRes.data || profileRes);
         } catch (err) {
             console.error("Error fetching profile:", err);
             toast.error("Failed to load profile");
@@ -106,7 +110,8 @@ export default function ProfilePreview() {
     const isProfileIncomplete =
         !profile?.alias ||
         !profile?.positions ||
-        !profile?.tenure;
+        !profile?.tenure ||
+        !profile?.member_since;
 
     // If incomplete, show only warning
     if (isProfileIncomplete) {
@@ -169,7 +174,9 @@ export default function ProfilePreview() {
                             {profile?.member_since && (
                                 <p className="text-xs text-gray-400 mt-1">
                                     Member since{" "}
-                                    {new Date(profile.member_since * 1000).toLocaleDateString()}
+                                    {typeof profile.member_since === 'number'
+                                        ? new Date(profile.member_since * 1000).toLocaleDateString()
+                                        : new Date(profile.member_since).toLocaleDateString()}
                                 </p>
                             )}
                         </div>

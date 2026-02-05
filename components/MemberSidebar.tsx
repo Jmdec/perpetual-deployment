@@ -104,7 +104,6 @@ export default function MemberSidebar({
     { icon: Newspaper, label: 'News', path: '/dashboard/member/news' },
     { icon: Megaphone, label: 'Announcements', path: '/dashboard/member/announcement' },
     { icon: Camera, label: 'Gallery', path: '/dashboard/member/gallery' },
-    { icon: BadgeCheck, label: 'Certificate of Legitemacy', path: '/dashboard/member/legitimacy' },
     { icon: Handshake, label: 'Events', path: '/dashboard/member/events' },
     { icon: ClipboardClock, label: 'Chapter\'s History', path: '/dashboard/member/history' },
     { icon: BookUser, label: 'Handbook', path: '/dashboard/member/handbook' },

@@ -76,18 +76,51 @@ const juantapAPI = {
         const data = await fetchWithAuth("/api/juantap");
         return data ?? null;
     },
-    create: (payload: any) =>
+    create: (payload: MemberProfilePayload) =>
         fetchWithAuth("/api/juantap", { method: "POST", body: JSON.stringify(payload) }),
-    update: (id: number, payload: any) =>
+    update: (id: number, payload: MemberProfilePayload) =>
         fetchWithAuth("/api/juantap", { method: "PUT", body: JSON.stringify({ id, ...payload }) }),
     delete: (id: number) =>
         fetchWithAuth("/api/juantap", { method: "DELETE", body: JSON.stringify({ id }) }),
 };
 
+interface MemberProfilePayload {
+    alias?: string;
+    tenure?: string;
+    member_since?: string;
+    projects?: string;
+    positions?: string;
+    achievements?: string;
+    profile_image?: string;
+    juantap_nfc?: boolean;
+    status?: string;
+}
+
 const memberAPI = {
-    get: async () => {
+    get: async (): Promise<MemberProfilePayload | null> => {
         const data = await fetchWithAuth("/api/member/profile");
         return data ?? null;
+    },
+    update: async (payload: MemberProfilePayload): Promise<MemberProfilePayload> => {
+        const data = await fetchWithAuth("/api/member/profile", {
+            method: "PUT",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" },
+        });
+        return data;
+    },
+    create: async (payload: MemberProfilePayload): Promise<MemberProfilePayload> => {
+        const data = await fetchWithAuth("/api/member/profile", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" },
+        });
+        return data;
+    },
+    delete: async (id: number): Promise<void> => {
+        await fetchWithAuth(`/api/member/profile/${id}`, {
+            method: "DELETE",
+        });
     },
 };
 
@@ -106,23 +139,23 @@ export default function MemberProfilePage() {
     const [formData, setFormData] = useState({
         alias: "",
         tenure: "",
+        member_since: "",
         projects: "",
         positions: "",
         achievements: "",
         juantap_nfc: false,
         profile_url: "",
         qr_code: "",
-        status: "inactive" as "active" | "inactive",
+        status: "" as string,
+        member_status: "inactive" as "active" | "inactive",
         subscription: "silver" as "silver" | "gold" | "black",
     });
 
     const [profileImage, setProfileImage] = useState<string | null>(null); // preview
-    const [profileImageFile, setProfileImageFile] = useState<File | null>(null); // actual upload
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        setProfileImageFile(file);
         const previewUrl = URL.createObjectURL(file);
         setProfileImage(previewUrl);
     };
@@ -151,21 +184,30 @@ export default function MemberProfilePage() {
             setLoading(true);
             try {
                 const profileData = await memberAPI.get();
+
                 setProfile(profileData);
                 setProfileImage(profileData?.profile_image || null);
+
+                // Convert member_since to date string if it exists
+                const memberSinceDateString = profileData?.member_since
+                    ? new Date(profileData.member_since).toISOString().split('T')[0]
+                    : "";
 
                 setFormData({
                     alias: profileData?.alias || "",
                     tenure: profileData?.tenure || "",
+                    member_since: memberSinceDateString,
                     projects: profileData?.projects || "",
                     positions: profileData?.positions || "",
                     achievements: profileData?.achievements || "",
-                    juantap_nfc: false,
+                    juantap_nfc: profileData?.juantap_nfc ?? false,
                     profile_url: "",
                     qr_code: "",
-                    status: "inactive",
+                    status: profileData?.status || "",
+                    member_status: "inactive",
                     subscription: "silver",
                 });
+
 
                 await fetchJuanTapProfileData();
             } catch (err) {
@@ -180,43 +222,91 @@ export default function MemberProfilePage() {
     }, [user]);
 
     const handleSave = async () => {
-        setIsSaving(true);
-
         try {
-            const formDataToSend = new FormData();
-            formDataToSend.append("alias", formData.alias);
-            formDataToSend.append("tenure", formData.tenure);
-            formDataToSend.append("projects", formData.projects);
-            formDataToSend.append("positions", formData.positions);
-            formDataToSend.append("achievements", formData.achievements);
+            setIsSaving(true);
 
-            if (profileImageFile) {
-                formDataToSend.append("profile_image", profileImageFile);
+            // Convert date string to timestamp if it exists
+            let memberSinceTimestamp: string | undefined = undefined;
+            if (formData.member_since) {
+                const date = new Date(formData.member_since);
+                memberSinceTimestamp = Math.floor(date.getTime() / 1000).toString();
             }
 
-            const res = await fetch("/api/member/profile", {
-                method: "PUT",
-                body: formDataToSend,
-                credentials: "include",
-            });
+            const payload: MemberProfilePayload = {
+                alias: formData.alias || undefined,
+                tenure: formData.tenure || undefined,
+                projects: formData.projects || undefined,
+                positions: formData.positions || undefined,
+                achievements: formData.achievements || undefined,
+                profile_image: profileImage || undefined,
+                juantap_nfc: formData.juantap_nfc,
+                member_since: memberSinceTimestamp,
+                status: formData.status || undefined
+            };
 
-            const text = await res.text();
-            const data = text ? JSON.parse(text) : {};
+            const saveResult = await memberAPI.update(payload);
 
-            if (!res.ok) throw new Error(data.message || "Failed to save profile");
-
-            setProfile(data.data || data); // handle wrapped data
-            setProfileImage(data.data?.profile_image || profileImage);
-            setProfileImageFile(null);
-            setIsEditing(false);
+            // Use the response data if available, otherwise refetch
+            if (saveResult) {
+                setProfile(saveResult);
+                setProfileImage(saveResult.profile_image || null);
+                const memberSinceDateString = saveResult?.member_since
+                    ? typeof saveResult.member_since === 'number'
+                        ? new Date(saveResult.member_since * 1000).toISOString().split('T')[0]
+                        : new Date(saveResult.member_since).toISOString().split('T')[0]
+                    : "";
+                setFormData({
+                    alias: saveResult.alias || "",
+                    tenure: saveResult.tenure || "",
+                    member_since: memberSinceDateString,
+                    projects: saveResult.projects || "",
+                    positions: saveResult.positions || "",
+                    achievements: saveResult.achievements || "",
+                    juantap_nfc: saveResult.juantap_nfc ?? false,
+                    profile_url: "",
+                    qr_code: "",
+                    status: saveResult.status || "",
+                    member_status: "inactive",
+                    subscription: "silver",
+                });
+            } else {
+                // Fallback: refetch if response is empty
+                const updatedProfile = await memberAPI.get();
+                if (updatedProfile) {
+                    setProfile(updatedProfile);
+                    setProfileImage(updatedProfile.profile_image || null);
+                    const memberSinceDateString = updatedProfile?.member_since
+                        ? typeof updatedProfile.member_since === 'number'
+                            ? new Date(updatedProfile.member_since * 1000).toISOString().split('T')[0]
+                            : new Date(updatedProfile.member_since).toISOString().split('T')[0]
+                        : "";
+                    setFormData({
+                        alias: updatedProfile.alias || "",
+                        tenure: updatedProfile.tenure || "",
+                        member_since: memberSinceDateString,
+                        projects: updatedProfile.projects || "",
+                        positions: updatedProfile.positions || "",
+                        achievements: updatedProfile.achievements || "",
+                        juantap_nfc: updatedProfile.juantap_nfc ?? false,
+                        profile_url: "",
+                        qr_code: "",
+                        status: updatedProfile.status || "",
+                        member_status: "inactive",
+                        subscription: "silver",
+                    });
+                }
+            }
 
             toast.success("Profile updated successfully");
-        } catch (err: any) {
-            toast.error(err.message || "Failed to save profile");
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Error saving profile:", err);
+            toast.error(err instanceof Error ? err.message : "Failed to save profile");
         } finally {
             setIsSaving(false);
         }
     };
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -229,13 +319,15 @@ export default function MemberProfilePage() {
             setFormData({
                 profile_url: juantapProfile.profile_url || "",
                 qr_code: juantapProfile.qr_code || "",
-                status: juantapProfile.status,
+                member_status: juantapProfile.status,
                 subscription: juantapProfile.subscription,
                 alias: formData.alias,
                 tenure: formData.tenure,
+                member_since: formData.member_since,
                 projects: formData.projects,
                 positions: formData.positions,
                 achievements: formData.achievements,
+                status: formData.status,
                 juantap_nfc: true,
             });
             setQrPreview(juantapProfile.qr_code || null);
@@ -244,7 +336,7 @@ export default function MemberProfilePage() {
                 ...prev,
                 profile_url: "",
                 qr_code: "",
-                status: "inactive",
+                member_status: "inactive",
                 subscription: "silver",
                 juantap_nfc: false,
             }));
@@ -273,16 +365,18 @@ export default function MemberProfilePage() {
 
         try {
             const payload = {
-                profile_url: formData.profile_url,
-                qr_code: formData.qr_code,
-                status: formData.status,
-                subscription: formData.subscription,
+                ...profile,
+                member_since: profile?.member_since?.toString(), // Convert to string for payload
+            };
+
+            const juantapPayload: MemberProfilePayload = {
+                member_since: payload.member_since,
             };
 
             if (juantapProfile) {
-                await juantapAPI.update(juantapProfile.id, payload);
+                await juantapAPI.update(juantapProfile.id, juantapPayload);
             } else {
-                await juantapAPI.create(payload);
+                await juantapAPI.create(juantapPayload);
             }
 
             await fetchJuanTapProfileData();
@@ -340,7 +434,7 @@ export default function MemberProfilePage() {
         <MemberLayout>
             <div className="min-h-screen">
                 {/* MEMBER PROFILE */}
-                <header className="mb-5 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 sm:px-6 py-3 sm:py-4 shadow-md">
+                <header className="mb-5 bg-linear-to-r from-red-500 to-orange-500 text-white px-4 sm:px-6 py-3 sm:py-4 shadow-md">
                     <div className="px-6 py-4 flex flex-col sm:flex-row sm:justify-between gap-3">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                             {/* Avatar */}
@@ -436,13 +530,15 @@ export default function MemberProfilePage() {
                         </div>
 
                         {/* PROFILE FIELDS */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Field label="Alias" name="alias" value={isEditing ? formData.alias : profile.alias || ""} editable={isEditing} onChange={handleChange} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-5">
+                            <Field label="Alias" name="alias" value={isEditing ? formData.alias : profile?.alias || ""} editable={isEditing} onChange={handleChange} />
                             <Field label="Tenure" name="tenure" value={isEditing ? formData.tenure : profile.tenure || ""} editable={isEditing} onChange={handleChange} />
+                            <Field label="Member Since" name="member_since" value={isEditing ? formData.member_since : (profile.member_since ? new Date(profile.member_since).toISOString().split('T')[0] : "")} editable={isEditing} onChange={handleChange} type="date" />
+                            <Field label="Status" name="status" value={isEditing ? formData.status : profile.status || ""} editable={isEditing} onChange={handleChange} />
                         </div>
                     </motion.div>
 
-                    {/* RIGHT COLUMN — JUANTAP */}
+                    {/* JUANTAP */}
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -453,34 +549,46 @@ export default function MemberProfilePage() {
                                 <>
                                     {(juantapProfile?.profile_url || juantapProfile?.qr_code) && (
                                         <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-8">
-                                            <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                                                <div className={`${juantapProfile?.status === 'active' ? 'bg-green-50' : 'bg-orange-50'} rounded-xl p-3 text-center`}>
-                                                    <p className="text-xs text-gray-500">Status</p>
-                                                    <p className={`font-semibold ${juantapProfile?.status === 'active' ? 'text-green-600' : 'text-orange-600'}`}>
-                                                        {juantapProfile?.status === 'active' ? 'Active' : 'Not Active'}
-                                                    </p>
-                                                </div>
+                                            <div className="flex justify-center items-center">
+                                                {juantapProfile?.qr_code ? (
+                                                    <div className="border border-gray-300 rounded-xl p-3 text-center">
+                                                        <Image
+                                                            src={juantapProfile.qr_code}
+                                                            alt="JuanTap QR Code"
+                                                            width={200}
+                                                            height={200}
+                                                            className="mx-auto rounded-lg border"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="bg-gray-50 rounded-xl p-3 text-center flex items-center justify-center">
+                                                        <p className="text-sm text-gray-400">No QR code uploaded</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
                                                 <div className="bg-gray-50 rounded-xl p-3 text-center">
                                                     <p className="text-xs text-gray-500">Subscription</p>
                                                     <p className="font-semibold text-gray-700 capitalize">
                                                         {juantapProfile?.subscription}
                                                     </p>
                                                 </div>
-                                            </div>
 
-                                            {juantapProfile?.profile_url && (
-                                                <div className="mb-4 p-3 bg-gray-50 rounded-xl">
-                                                    <p className="text-xs text-gray-500 mb-1">Profile URL</p>
-                                                    <a
-                                                        href={juantapProfile.profile_url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-sm text-orange-600 hover:underline break-all"
-                                                    >
-                                                        {juantapProfile.profile_url}
-                                                    </a>
-                                                </div>
-                                            )}
+                                                {juantapProfile?.profile_url && (
+                                                    <div className="bg-gray-50 rounded-xl p-3 text-center">
+                                                        <p className="text-xs text-gray-500">Profile URL</p>
+                                                        <a
+                                                            href={juantapProfile.profile_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-sm text-orange-600 hover:underline break-all"
+                                                        >
+                                                            {juantapProfile.profile_url}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
 
@@ -512,7 +620,7 @@ export default function MemberProfilePage() {
                     </motion.div>
                 </div>
 
-                {/* PROJECTS & ACHIEVEMENTS — FULL WIDTH */}
+                {/* PROJECTS & ACHIEVEMENTS */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -656,7 +764,7 @@ interface FieldProps {
     value: string | boolean;
     editable: boolean;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    type?: "text" | "checkbox";
+    type?: "text" | "checkbox" | "date";
 }
 
 function Field({ label, name, value, editable, onChange, type = "text" }: FieldProps) {
@@ -674,6 +782,7 @@ function Field({ label, name, value, editable, onChange, type = "text" }: FieldP
                     />
                 ) : (
                     <input
+                        type={type}
                         name={name}
                         value={value as string || ""}
                         onChange={onChange}
@@ -700,7 +809,7 @@ function Info({ icon: Icon, label, value }: InfoProps) {
             <div>
                 <p className="text-xs text-gray-500">{label}</p>
                 <p className="font-medium text-sm text-gray-900">
-                    {value || "Not specified"}
+                    {value}
                 </p>
             </div>
         </div>
